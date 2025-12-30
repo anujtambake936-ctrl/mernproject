@@ -12,14 +12,26 @@ const Navbar = ({ isDarkMode, setIsDarkMode }) => {
   const dispatch = useDispatch();
 
   const handleLogout = async () => {
-    const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/logout`, {
-      credentials: 'include',
-    });
-    const data = await res.json();
-    if (data.success) {
-      dispatch(setUser(null));
-      toast.success(data.message);
-      navigate('/login');
+    try {
+      const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+      const response = await fetch(`${serverUrl}/api/auth/logout`, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        toast.error('Logout failed');
+        return
+      }
+
+      const data = await response.json();
+      if (data.success) {
+        dispatch(setUser(null));
+        toast.success(data.message);
+        navigate('/login');
+      }
+    } catch (error) {
+      toast.error('Network error. Please check if the server is running.');
+      console.error('Logout error:', error)
     }
   };
 
@@ -44,6 +56,13 @@ const Navbar = ({ isDarkMode, setIsDarkMode }) => {
           {user ? (
             <>
               <Link to="/cart">Cart</Link>
+              <Link to="/orders">Orders</Link>
+              {user.isAdmin && (
+                <>
+                  <Link to="/add-product">Add Product</Link>
+                  <Link to="/import-products">Import Products</Link>
+                </>
+              )}
               <button className="px-4 py-1 bg-red-500 text-white rounded-lg" onClick={handleLogout}>
                 Logout
               </button>

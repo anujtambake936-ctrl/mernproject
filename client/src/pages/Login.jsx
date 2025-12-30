@@ -27,7 +27,8 @@ const Login = ({getUser}) => {
    
     try{
       setLoading(true)
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/auth/login`,{
+      const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+      const response = await fetch(`${serverUrl}/api/auth/login`,{
         method:"POST",
         headers:{
           "Content-Type":"application/json"
@@ -36,7 +37,21 @@ const Login = ({getUser}) => {
         body:JSON.stringify(formData)
       })
 
-      const data = await res.json()
+      // Check if response is ok before parsing JSON
+      if (!response.ok) {
+        const errorText = await response.text()
+        let errorMessage = "Something went wrong."
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.message || errorMessage
+        } catch {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`
+        }
+        toast.error(errorMessage)
+        return
+      }
+
+      const data = await response.json()
 
       if(data.success){
         setFormData(initialData)
@@ -49,8 +64,8 @@ const Login = ({getUser}) => {
 
     }catch(error){
 
-      toast.error("Something went wrong.")
-      console.log(error)
+      toast.error("Network error. Please check if the server is running.")
+      console.error("Login error:", error)
     }finally{
       
       setLoading(false)

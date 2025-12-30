@@ -37,7 +37,7 @@ const Footer = () => {
         {/* Developer */}
         <div>
           <h3 className="text-lg font-semibold mb-4">Developer</h3>
-          <p>Developed By <a href="https://ankitjha.vercel.app" className="underline text-blue-400" target="_blank">Ankit Jha</a></p>
+          <p>Developed By <a href="https://ankitjha.vercel.app" className="underline text-blue-400" target="_blank">Anuj</a></p>
           <p className="mt-2 text-sm text-gray-400">© {new Date().getFullYear()} All Rights Reserved.</p>
         </div>
       </div>

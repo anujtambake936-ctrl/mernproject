@@ -1,5 +1,16 @@
 const User = require("../models/user")
-const stripe = require('stripe')(process.env.STRIPE_KEY)
+const Order = require("../models/order")
+
+// Initialize Stripe with error handling
+let stripe
+try {
+    if (!process.env.STRIPE_KEY) {
+        console.warn('Warning: STRIPE_KEY is not set in environment variables. Stripe checkout will not work.')
+    }
+    stripe = require('stripe')(process.env.STRIPE_KEY)
+} catch (error) {
+    console.error('Error initializing Stripe:', error.message)
+}
 
 const addToCart = async (req, res) => {
     const { id, title, description, image, price, category } = req.body
@@ -194,10 +205,23 @@ const decrementQuantity = async (req, res) => {
 
 const checkOut = async (req, res) => {
     try {
+      // Check if Stripe is configured
+      if (!process.env.STRIPE_KEY) {
+        return res.status(500).json({
+          success: false,
+          message: "Stripe API key is not configured. Please add STRIPE_KEY to your .env file.",
+        });
+      }
+
+      const userId = req.id
+      const { items } = req.body
+      const totalAmount = items.reduce((total, item) => total + (item.price * item.quantity), 0)
+
+      const origin = process.env.ORIGIN || 'http://localhost:5173'
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ['card'],
         mode: 'payment',
-        line_items: req.body.items.map(item => {
+        line_items: items.map(item => {
           return {
             price_data: {
               currency: 'usd',
@@ -209,11 +233,24 @@ const checkOut = async (req, res) => {
             quantity: item.quantity,
           };
         }),
-        success_url: `${process.env.ORIGIN}/success`,
-        cancel_url: `${process.env.ORIGIN}/cancel`,
+        success_url: `${origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/cancel`,
+        metadata: {
+          userId: userId.toString()
+        }
       });
+
+      // Save order with pending status
+      const order = new Order({
+        userId,
+        items,
+        totalAmount,
+        stripeSessionId: session.id,
+        status: 'pending'
+      })
+      await order.save()
   
-      res.status(200).json({ success: true, url: session.url });
+      res.status(200).json({ success: true, url: session.url, orderId: order._id });
     } catch (error) {
       res.status(500).json({
         success: false,

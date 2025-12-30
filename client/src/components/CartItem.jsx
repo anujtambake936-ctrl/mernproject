@@ -9,68 +9,107 @@ const CartItem = ({ item }) => {
     const dispatch = useDispatch()
     const handleRemoveFromCart = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/cart/remove/${item.id}`, {
+            const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+            const response = await fetch(`${serverUrl}/api/cart/remove/${item.id}`, {
                 method: "DELETE",
                 credentials: 'include'
             })
-            const data = await res.json()
+
+            if (!response.ok) {
+                const errorText = await response.text()
+                let errorMessage = "Something went wrong."
+                try {
+                    const errorData = JSON.parse(errorText)
+                    errorMessage = errorData.message || errorMessage
+                } catch {
+                    errorMessage = `Server error: ${response.status} ${response.statusText}`
+                }
+                toast.error(errorMessage)
+                return
+            }
+
+            const data = await response.json()
 
             if (data.success) {
                 dispatch(removeFromCart(item.id))
                 toast.success(data.message)
-
-
             } else {
                 toast.error(data.message)
             }
 
         } catch (error) {
-            toast.error("Something went wrong.")
-            console.log(error)
+            toast.error("Network error. Please check if the server is running.")
+            console.error("Remove from cart error:", error)
         }
     }
     const handleIncrement = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/cart/increment/${item.id}`, {
+            const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+            const response = await fetch(`${serverUrl}/api/cart/increment/${item.id}`, {
                 method: "POST",
                 credentials: 'include'
             })
-            const data = await res.json()
+
+            if (!response.ok) {
+                const errorText = await response.text()
+                let errorMessage = "Something went wrong."
+                try {
+                    const errorData = JSON.parse(errorText)
+                    errorMessage = errorData.message || errorMessage
+                } catch {
+                    errorMessage = `Server error: ${response.status} ${response.statusText}`
+                }
+                toast.error(errorMessage)
+                return
+            }
+
+            const data = await response.json()
 
             if (data.success) {
-
                 toast.success(data.message)
                 dispatch(incrementQuantity(item.id))
-
             } else {
                 toast.error(data.message)
             }
 
         } catch (error) {
-            toast.error("Something went wrong.")
-            console.log(error)
+            toast.error("Network error. Please check if the server is running.")
+            console.error("Increment error:", error)
         }
     }
     const handleDecrement = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/cart/decrement/${item.id}`, {
+            const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+            const response = await fetch(`${serverUrl}/api/cart/decrement/${item.id}`, {
                 method: "POST",
                 credentials: 'include'
             })
-            const data = await res.json()
+
+            if (!response.ok) {
+                const errorText = await response.text()
+                let errorMessage = "Something went wrong."
+                try {
+                    const errorData = JSON.parse(errorText)
+                    errorMessage = errorData.message || errorMessage
+                } catch {
+                    errorMessage = `Server error: ${response.status} ${response.statusText}`
+                }
+                toast.error(errorMessage)
+                return
+            }
+
+            const data = await response.json()
 
             if (data.success) {
-
                 toast.success(data.message)
                 dispatch(decrementQuantity(item.id))
-
             } else {
                 toast.error(data.message)
             }
 
         } catch (error) {
-            toast.error("Something went wrong.")
-            console.log(error)
+            toast.error("Network error. Please check if the server is running.")
+            console.error("Decrement error:", error)
         }
     }
     console.log(item)

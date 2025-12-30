@@ -14,7 +14,8 @@ const Cart = () => {
   const orderNow = async () => {
     try {
       setLoading(true)
-      const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/cart/checkout`, {
+      const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+      const response = await fetch(`${serverUrl}/api/cart/checkout`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -23,14 +24,28 @@ const Cart = () => {
         body: JSON.stringify({ items })
       })
 
-      const data = await res.json()
+      if (!response.ok) {
+        const errorText = await response.text()
+        let errorMessage = "Something went wrong."
+        try {
+          const errorData = JSON.parse(errorText)
+          errorMessage = errorData.message || errorMessage
+        } catch {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`
+        }
+        toast.error('Order failed: ' + errorMessage)
+        return
+      }
+
+      const data = await response.json()
       if (data.success) {
         window.location.href = data.url;
       } else {
         toast.error('Order failed: ' + data.message);
       }
     } catch (error) {
-      toast.error('Order failed: ' + error.message);
+      toast.error('Network error. Please check if the server is running.');
+      console.error('Checkout error:', error)
     } finally {
       setLoading(false)
     }

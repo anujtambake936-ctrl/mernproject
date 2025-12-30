@@ -17,6 +17,9 @@ import Footer from './components/Footer'
 import NotFound from './pages/NotFound'
 import Cancel from './pages/Cancel'
 import Success from './pages/Success'
+import OrderHistory from './pages/OrderHistory'
+import AddProduct from './pages/AddProduct'
+import ImportProducts from './pages/ImportProducts'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -25,8 +28,16 @@ const App = () => {
     getUserFromServer().then((data) => {
       if (data.success) {
         dispatch(setUser(data.user))
-        dispatch(setCart(data.user.cart))
+        dispatch(setCart(data.user.cart || []))
+      } else {
+        // Clear user state if not authenticated
+        dispatch(setUser(null))
+        dispatch(setCart([]))
       }
+    }).catch((error) => {
+      console.error("Error getting user:", error)
+      dispatch(setUser(null))
+      dispatch(setCart([]))
     })
   }
   useEffect(() => {
@@ -47,6 +58,9 @@ const App = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/success" element={<Success getUser={getUser}/>} />
         <Route path="/cancel" element={<Cancel />} />
+        <Route path="/orders" element={<OrderHistory />} />
+        <Route path="/add-product" element={<AddProduct />} />
+        <Route path="/import-products" element={<ImportProducts />} />
         <Route path="/*" element={<NotFound />} />
       </Routes>
       <Footer />

@@ -20,12 +20,50 @@ const ProductDetails = () => {
     const fetchProduct = async () => {
         try {
             setLoading(true)
-            const res = await fetch(`https://dummyjson.com/products/${id}`)
+            const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+            const res = await fetch(`${serverUrl}/api/products/${id}`, {
+                credentials: 'include'
+            })
+            
+            if (!res.ok) {
+                // Fallback to dummyjson if not found in database
+                const fallbackRes = await fetch(`https://dummyjson.com/products/${id}`)
+                const fallbackData = await fallbackRes.json()
+                setProduct(fallbackData)
+                setSelectedImage(fallbackData.thumbnail)
+                return
+            }
+            
             const data = await res.json()
-            setProduct(data)
-            setSelectedImage(data.thumbnail)
+            if (data.success) {
+                // Transform database product to match expected format
+                const transformedProduct = {
+                    id: data.product._id,
+                    title: data.product.title,
+                    description: data.product.description,
+                    price: data.product.price,
+                    category: data.product.category,
+                    thumbnail: data.product.thumbnail,
+                    images: data.product.images.length > 0 ? data.product.images : [data.product.thumbnail],
+                    stock: data.product.stock,
+                    rating: data.product.rating,
+                    brand: data.product.brand,
+                    reviews: [] // Add empty reviews array for compatibility
+                }
+                setProduct(transformedProduct)
+                setSelectedImage(transformedProduct.thumbnail)
+            }
         } catch (error) {
             console.log(error)
+            // Fallback to dummyjson on error
+            try {
+                const fallbackRes = await fetch(`https://dummyjson.com/products/${id}`)
+                const fallbackData = await fallbackRes.json()
+                setProduct(fallbackData)
+                setSelectedImage(fallbackData.thumbnail)
+            } catch (fallbackError) {
+                console.log(fallbackError)
+            }
         } finally {
             setLoading(false)
         }
@@ -49,7 +87,8 @@ const ProductDetails = () => {
         }
         
         try {
-            const res = await fetch(`${import.meta.env.VITE_SERVER_URL}/api/cart/add`, {
+            const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000'
+            const response = await fetch(`${serverUrl}/api/cart/add`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -57,7 +96,22 @@ const ProductDetails = () => {
                 credentials: 'include',
                 body: JSON.stringify(payload)
             })
-            const data = await res.json()
+
+            // Check if response is ok before parsing JSON
+            if (!response.ok) {
+                const errorText = await response.text()
+                let errorMessage = "Something went wrong."
+                try {
+                    const errorData = JSON.parse(errorText)
+                    errorMessage = errorData.message || errorMessage
+                } catch {
+                    errorMessage = `Server error: ${response.status} ${response.statusText}`
+                }
+                toast.error(errorMessage)
+                return
+            }
+
+            const data = await response.json()
 
             if (data.success) {
                 toast.success(data.message)
@@ -74,8 +128,8 @@ const ProductDetails = () => {
                 toast.error(data.message)
             }
         } catch (error) {
-            toast.error(error.message)
-            console.log(error)
+            toast.error("Network error. Please check if the server is running.")
+            console.error("Add to cart error:", error)
         }
     }
 
