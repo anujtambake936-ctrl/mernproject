@@ -137,7 +137,7 @@ const Cart = () => {
                   <div className='flex justify-between items-center p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-xl border-2 border-green-200'>
                     <span className='text-gray-700 font-semibold'>Total Price</span>
                     <span className='text-2xl font-bold text-green-600'>
-                      ${totalPrice.toFixed(2)}
+                      ₹{totalPrice.toFixed(2)}
                     </span>
                   </div>
                 </div>

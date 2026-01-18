@@ -75,15 +75,15 @@ const Product = ({product}) => {
           {/* Price */}
           <div className="flex items-center justify-center space-x-2">
             <span className="text-2xl font-bold text-green-600">
-              ${product.price}
+              ₹{product.price}
             </span>
-            <div className={`w-2 h-2 bg-green-500 rounded-full transition-all duration-300 ${
+            <div className={`w-2 h-2 bg-green-500 rounded-full transition-all duration-300 ₹{
               isHovered ? 'animate-pulse' : ''
             }`}></div>
           </div>
           
           {/* Action Button */}
-          <div className={`transition-all duration-300 ${
+          <div className={`transition-all duration-300 ₹{
             isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           }`}>
             <button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-full font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">

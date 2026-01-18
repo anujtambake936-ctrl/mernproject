@@ -146,7 +146,7 @@ const OrderHistory = () => {
                     </div>
                     <div className='text-right'>
                       <p className='text-sm text-gray-500'>Total Amount</p>
-                      <p className='text-2xl font-bold text-green-600'>${order.totalAmount.toFixed(2)}</p>
+                      <p className='text-2xl font-bold text-green-600'>₹{order.totalAmount.toFixed(2)}</p>
                     </div>
                   </div>
                 </div>
@@ -167,7 +167,7 @@ const OrderHistory = () => {
                         </div>
                         <div className='text-right'>
                           <p className='text-sm text-gray-500'>Quantity: {item.quantity}</p>
-                          <p className='font-semibold text-lg'>${(item.price * item.quantity).toFixed(2)}</p>
+                          <p className='font-semibold text-lg'>₹{(item.price * item.quantity).toFixed(2)}</p>
                         </div>
                       </div>
                     ))}

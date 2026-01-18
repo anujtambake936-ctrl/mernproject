@@ -224,7 +224,7 @@ const checkOut = async (req, res) => {
         line_items: items.map(item => {
           return {
             price_data: {
-              currency: 'usd',
+              currency: 'inr',
               product_data: {
                 name: item.title,
               },
